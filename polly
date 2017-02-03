@@ -1,9 +1,14 @@
 #!/usr/bin/env bash
 set -o nounset -o pipefail
 
-CHEFDK_TARGET_VERSION=1.2.22
+cookbook=${1:-polly_macos}
+
+CHEFDK_TARGET_VERSION=1.2.20
 
 clear
+
+temp_install_dir=$(mktemp -d -t polly)
+trap "echo '==> Cleaning up....' && rm -rf \"${temp_install_dir}\"" EXIT
 
 cat <<EOF;
 Polymath 0.1 - Reconstitute machine configs from scripts
@@ -32,5 +37,12 @@ if [[ "$INSTALL_CHEFDK" -eq 1 ]]; then
     sudo -E bash -s -- -c stable -P chefdk -v ${CHEFDK_TARGET_VERSION}
 fi
 
-temp_install_dir=$(mktemp -d -t polly)
-trap "echo '==> Cleaning up....' && rm -rf \"${temp_install_dir}\"" EXIT
+if [ -n "${POLLY_JSON_ATTRIBUTES:-}" ]; then
+  json_attributes=" --json-attributes ${POLLY_JSON_ATTRIBUTES}"
+fi
+
+echo "==> Downloading cookbook dependencies"
+chef exec berks vendor "${temp_install_dir}/berks-cookbooks"
+
+echo "==> Running chef-client to boostrap this machine"
+echo sudo -E chef exec chef-client --local-mode --log_level error --config-option cookbook_path="${temp_install_dir}/berks-cookbooks" --override-runlist "${cookbook}" ${json_attributes:-}
