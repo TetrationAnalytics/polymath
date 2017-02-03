@@ -2,7 +2,7 @@
 
 Reconstitue Linux and macOS machine configurations via scripts
 
-![Dash](https://raw.githubusercontent.com/TetrationAnalytics/polymath/images/images/polly.jpg "Polly")
+![Polly](https://github.com/TetrationAnalytics/polymath/raw/images/polly.jpg "Polly")
 
 ## Run scripts via
 
