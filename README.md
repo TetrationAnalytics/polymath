@@ -2,7 +2,7 @@
 
 # Polymath
 
-Reconstitue Linux and macOS machine configurations via scripts
+Reconstitute Linux and macOS machine configurations via scripts
 
 ## Run scripts via
 
