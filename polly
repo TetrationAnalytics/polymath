@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+set -o nounset -o pipefail
+
+CHEFDK_TARGET_VERSION=1.2.22
+
+clear
+
+cat <<EOF;
+Polymath 0.1 - Reconstitute machine configs from scripts
+--------------------------------------------------------
+EOF
+
+chefdk_installed_version=$(chef --version 2>/dev/null | awk '/Chef Development Kit Version:/ {print $NF}')
+case "${chefdk_installed_version}" in
+  "$CHEFDK_TARGET_VERSION")
+    echo "==> ChefDK ${CHEFDK_TARGET_VERSION} is already installed, skipping"
+    INSTALL_CHEFDK=0;;
+  "")
+    # ChefDK is not installed
+    INSTALL_CHEFDK=1;;
+  *)
+    echo "==> Replacing ChefDK ${chefdk_installed_version} with ${CHEFDK_TARGET_VERSION}"
+    echo "==> Uninstalling ChefDK ${chefdk_installed_version}..."
+    sudo rm -rf /opt/chefdk
+    sudo find /usr/bin /usr/local/bin -lname '/opt/chefdk/*' -delete
+    rm -rf ~/.chefdk
+    INSTALL_CHEFDK=1;;
+esac
+if [[ "$INSTALL_CHEFDK" -eq 1 ]]; then
+  echo "==> Installing ChefDK ${CHEFDK_TARGET_VERSION}"
+  curl --silent --show-error https://omnitruck.chef.io/install.sh | \
+    sudo -E bash -s -- -c stable -P chefdk -v ${CHEFDK_TARGET_VERSION}
+fi
+
+temp_install_dir=$(mktemp -d -t polly)
+trap "echo '==> Cleaning up....' && rm -rf \"${temp_install_dir}\"" EXIT
