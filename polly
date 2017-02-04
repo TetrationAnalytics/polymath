@@ -46,3 +46,4 @@ chef exec berks vendor "${temp_install_dir}/berks-cookbooks"
 
 echo "==> Running chef-client to boostrap this machine"
 echo sudo -E chef exec chef-client --local-mode --log_level error --config-option cookbook_path="${temp_install_dir}/berks-cookbooks" --override-runlist "${cookbook}" ${json_attributes:-}
+sudo -E chef exec chef-client --local-mode --log_level error --config-option cookbook_path="${temp_install_dir}/berks-cookbooks" --override-runlist "${cookbook}" ${json_attributes:-}
