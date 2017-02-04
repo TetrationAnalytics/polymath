@@ -7,7 +7,7 @@ CHEFDK_TARGET_VERSION=1.2.20
 
 clear
 
-temp_install_dir=$(mktemp -d -t polly)
+temp_install_dir=$(mktemp -d -t polly.XXXXXX)
 trap "echo '==> Cleaning up....' && rm -rf \"${temp_install_dir}\"" EXIT
 
 cat <<EOF;
