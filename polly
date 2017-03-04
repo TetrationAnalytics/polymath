@@ -48,7 +48,7 @@ chef exec berks vendor "${temp_install_dir}/berks-cookbooks"
 echo "==> Downloading secret store"
 rm -rf "${temp_install_dir}/secret-store"
 git clone https://github.com/TetrationAnalytics/secret-store.git "${temp_install_dir}/secret-store"
-cp -r "${temp_install_dir}/secret-store/data_bags/" "${temp_install_dir}/secret-store/data_bags"
+cp -r "${temp_install_dir}/secret-store/data_bags/" "${temp_install_dir}/data_bags"
 rm -rf "${temp_install_dir}/secret-store"
 
 echo "==> Running chef-client to boostrap this machine"
