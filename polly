@@ -46,10 +46,10 @@ chef exec berks vendor "${temp_install_dir}/berks-cookbooks"
 
 # Secrets need to go alongside cookbooks with Chef local mode
 echo "==> Downloading secret store"
-rm -rf "${temp_install_dir}/secret-store"
-git clone https://github.com/TetrationAnalytics/secret-store.git "${temp_install_dir}/secret-store"
-cp -r "${temp_install_dir}/secret-store/data_bags/" "${temp_install_dir}/data_bags"
-rm -rf "${temp_install_dir}/secret-store"
+rm -rf "${temp_install_dir}/secret_store"
+git clone https://github.com/TetrationAnalytics/secret_store.git "${temp_install_dir}/secret_store"
+cp -r "${temp_install_dir}/secret_store/data_bags/" "${temp_install_dir}/data_bags"
+rm -rf "${temp_install_dir}/secret_store"
 
 echo "==> Running chef-client to boostrap this machine"
 echo sudo -E chef exec chef-client --local-mode --log_level error --config-option cookbook_path="${temp_install_dir}/berks-cookbooks" --override-runlist "${cookbook}" ${json_attributes:-}
