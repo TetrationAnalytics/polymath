@@ -27,9 +27,29 @@ uninstall_chefdk_mac() {
     fi
 }
 
+uninstall_chefdk_linux() {
+    chefdk_installed_version=$(chef --version 2>/dev/null | awk '/Chef Development Kit Version:/ {print $NF}')
+    if [ "${chefdk_installed_version}" != "" ]; then
+        distro==$(ls -d /etc/[A-Za-z]*[_-][rv]e[lr]* | grep -v "lsb" | cut -d'/' -f3 | cut -d'-' -f1 | cut -d'_' -f1)
+        if [[ $distro =~ redhat|centos ]]; then 
+            chefdk_package=$(rpm -qa *chefdk*)
+            echo "==> Uninstalling ChefDK ${chefdk_package} on CentOS..."
+            if ! command -v sudo >/dev/nul 2>&1; then
+                yum remove -y ${chefdk_package}
+            else
+                sudo yum remove -y ${chefdk_package}
+            fi
+        fi
+    else
+        echo "==> ChefDK is not installed, skipping"
+    fi
+}
+
 uninstall_chefdk() {
     if [ "$(uname)" = "Darwin" ]; then
         uninstall_chefdk_mac
+    elif [ "$(uname)" = "Linux" ]; then
+        uninstall_chefdk_linux
     fi
 }
 
