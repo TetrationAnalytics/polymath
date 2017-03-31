@@ -1,56 +1,124 @@
 #!/usr/bin/env bash
-set -o nounset -o pipefail
+set -o nounset # -u exit the script if an uninitialized variable is used
+set -o pipefail
 
-cookbook=${1:-polly_macos}
+if [ "${DEBUG:-false}" = "true" ]; then
+    set -o xtrace # -x turn on bash tracing
+fi
 
 CHEFDK_TARGET_VERSION=1.2.20
 
+usage() {
+    echo "usage: $(basename $0) <cookbook::recipe> [path_to_optional_json_attributes_file]"
+    echo "       $(basename $0) chef - Install ChefDK"
+    echo "       $(basename $0) nukechef - Remove ChefDK"
+}
+
+uninstall_chefdk_mac() {
+    chefdk_installed_version=$(chef --version 2>/dev/null | awk '/Chef Development Kit Version:/ {print $NF}')
+    if [ "${chefdk_installed_version}" != "" ]; then
+        echo "==> Uninstalling ChefDK ${chefdk_installed_version} on macOS..."
+        sudo rm -rf /opt/chefdk
+        sudo pkgutil --forget com.getchef.pkg.chefdk
+        sudo find /usr/bin /usr/local/bin -lname '/opt/chefdk/*' -delete
+        rm -rf ~/.chefdk
+    else
+        echo "==> ChefDK is not installed, skipping"
+    fi
+}
+
+uninstall_chefdk() {
+    if [ "$(uname)" = "Darwin" ]; then
+        uninstall_chefdk_mac
+    fi
+}
+
+install_chefdk_mac() {
+    chefdk_installed_version=$(chef --version 2>/dev/null | awk '/Chef Development Kit Version:/ {print $NF}')
+    case "${chefdk_installed_version}" in
+        "${CHEFDK_TARGET_VERSION}")
+            echo "==> ChefDK ${CHEFDK_TARGET_VERSION} is already installed, skipping"
+            INSTALL_CHEFDK=0;;
+        "")
+            # ChefDK is not installed
+            INSTALL_CHEFDK=1;;
+        *)
+            echo "==> Replacing ChefDK ${chefdk_installed_version} with ${CHEFDK_TARGET_VERSION}"
+            uninstall_chefdk
+            INSTALL_CHEFDK=1;;
+    esac
+    if [[ "${INSTALL_CHEFDK}" -eq 1 ]]; then
+        echo "==> Installing ChefDK ${CHEFDK_TARGET_VERSION}"
+        curl --silent --show-error https://omnitruck.chef.io/install.sh | \
+          sudo -E bash -s -- -c stable -P chefdk -v ${CHEFDK_TARGET_VERSION}
+    fi
+}
+
+install_chefdk() {
+    if [ "$(uname)" = "Darwin" ]; then
+        install_chefdk_mac
+    fi
+}
+
+args() {
+    if [ $# -lt 1 ]; then
+        usage
+        exit 1
+    fi
+
+    if [ "${1}" = "nukechef" ]; then
+        uninstall_chefdk
+        exit 0
+    elif [ "${1}" = "chef" ]; then
+        install_chefdk
+        exit 0
+    fi
+
+    cookbook=${1}
+    json_attributes_file=${2:-}
+    if [[ -n ${json_attributes_file} ]]; then
+        if [ ! -f ${json_attributes_file} ]; then
+            json_attributes_file="${json_attributes_file}.json"
+            if [ ! -f ${json_attributes_file} ]; then
+                echo "$(basename $): Invalid json attributes file ${json_attributes_file}"
+                exit 127
+            fi
+        fi
+        json_attributes=" --json-attributes ${json_attributes_file}"
+    fi
+}
+
+# Main
+
+args "$@"
+
 clear
 
-temp_install_dir=$(mktemp -d -t polly.XXXXXX)
-trap "echo '==> Cleaning up....' && rm -rf \"${temp_install_dir}\"" EXIT
+temp_install_dir=$(mktemp -d -t polly.XXXXX)
+trap "echo '==> Cleaning up...' && rm -rf \"${temp_install_dir}\"" EXIT
 
 cat <<EOF;
 Polymath 0.1 - Reconstitute machine configs from scripts
 --------------------------------------------------------
 EOF
 
-chefdk_installed_version=$(chef --version 2>/dev/null | awk '/Chef Development Kit Version:/ {print $NF}')
-case "${chefdk_installed_version}" in
-  "$CHEFDK_TARGET_VERSION")
-    echo "==> ChefDK ${CHEFDK_TARGET_VERSION} is already installed, skipping"
-    INSTALL_CHEFDK=0;;
-  "")
-    # ChefDK is not installed
-    INSTALL_CHEFDK=1;;
-  *)
-    echo "==> Replacing ChefDK ${chefdk_installed_version} with ${CHEFDK_TARGET_VERSION}"
-    echo "==> Uninstalling ChefDK ${chefdk_installed_version}..."
-    sudo rm -rf /opt/chefdk
-    sudo find /usr/bin /usr/local/bin -lname '/opt/chefdk/*' -delete
-    rm -rf ~/.chefdk
-    INSTALL_CHEFDK=1;;
-esac
-if [[ "$INSTALL_CHEFDK" -eq 1 ]]; then
-  echo "==> Installing ChefDK ${CHEFDK_TARGET_VERSION}"
-  curl --silent --show-error https://omnitruck.chef.io/install.sh | \
-    sudo -E bash -s -- -c stable -P chefdk -v ${CHEFDK_TARGET_VERSION}
-fi
-
-if [ -n "${POLLY_JSON_ATTRIBUTES:-}" ]; then
-  json_attributes=" --json-attributes ${POLLY_JSON_ATTRIBUTES}"
-fi
+install_chefdk
 
 echo "==> Downloading cookbook dependencies"
 chef exec berks vendor "${temp_install_dir}/berks-cookbooks"
 
 # Secrets need to go alongside cookbooks with Chef local mode
-echo "==> Downloading secret store"
-rm -rf "${temp_install_dir}/secret_store"
-git clone git@github.com:TetrationAnalytics/secret_store.git "${temp_install_dir}/secret_store"
-cp -r "${temp_install_dir}/secret_store/data_bags/" "${temp_install_dir}/data_bags"
-rm -rf "${temp_install_dir}/secret_store"
+if [ ! -z ${SECRET_STORE_URL+x} ]; then
+    echo "==> Downloading secret store"
+    rm -rf "${temp_install_dir}/secret_store"
+    curl -o "${temp_install_dir}/secret_store.tgz" "${SECRET_STORE_URL}"
+    mkdir -p "${temp_install_dir}/secret_store"
+    tar xvf secret_store.tgz -C "${temp_install_dir}/secret_store" --strip 1
+    cp -r "${temp_install_dir}/secret_store" "${temp_install_dir}/data_bags"
+    rm -rf "${temp_install_dir}/secret_store"
+fi
 
-echo "==> Running chef-client to boostrap this machine"
-echo sudo -E chef exec chef-client --local-mode --log_level error --config-option cookbook_path="${temp_install_dir}/berks-cookbooks" --override-runlist "${cookbook}" ${json_attributes:-}
-sudo -E chef exec chef-client --local-mode --log_level error --config-option cookbook_path="${temp_install_dir}/berks-cookbooks" --override-runlist "recipe[${cookbook}]" ${json_attributes:-}
+echo "==> Running chef-client in local mode"
+cmd='sudo -E chef exec chef-client --local-mode --log_level error --config-option cookbook_path="${temp_install_dir}/berks-cookbooks" --override-runlist "recipe[${cookbook}]" ${json_attributes:-}'
+echo ${cmd}
+eval ${cmd}
