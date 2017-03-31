@@ -54,9 +54,37 @@ install_chefdk_mac() {
     fi
 }
 
+install_chefdk_linux() {
+    chefdk_installed_version=$(chef --version 2>/dev/null | awk '/Chef Development Kit Version:/ {print $NF}')
+    case "${chefdk_installed_version}" in
+        "${CHEFDK_TARGET_VERSION}")
+            echo "==> ChefDK ${CHEFDK_TARGET_VERSION} is already installed, skipping"
+            INSTALL_CHEFDK=0;;
+        "")
+            # ChefDK is not installed
+            INSTALL_CHEFDK=1;;
+        *)
+            echo "==> Replacing ChefDK ${chefdk_installed_version} with ${CHEFDK_TARGET_VERSION}"
+            uninstall_chefdk
+            INSTALL_CHEFDK=1;;
+    esac
+    if [[ "${INSTALL_CHEFDK}" -eq 1 ]]; then
+        echo "==> Installing ChefDK ${CHEFDK_TARGET_VERSION}"
+        if ! command -v sudo >/dev/nul 2>&1; then
+            curl --silent --show-error https://omnitruck.chef.io/install.sh | \
+              bash -s -- -c stable -P chefdk -v ${CHEFDK_TARGET_VERSION}
+        else
+            curl --silent --show-error https://omnitruck.chef.io/install.sh | \
+              sudo -E bash -s -- -c stable -P chefdk -v ${CHEFDK_TARGET_VERSION}
+        fi
+    fi
+}
+
 install_chefdk() {
     if [ "$(uname)" = "Darwin" ]; then
         install_chefdk_mac
+    elif [ "$(uname)" = "Linux" ]; then
+        install_chefdk_linux
     fi
 }
 
