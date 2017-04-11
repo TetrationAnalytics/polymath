@@ -155,7 +155,7 @@ install_chefdk
 cat > "${temp_install_dir}/Berksfile" <<EOF;
 source 'http://artifacts.tetrationanalytics.com/artifactory/api/chef/supermarket'
 
-metadata
+cookbook '${cookbook}'
 EOF
 
 echo "==> Downloading cookbook dependencies"
