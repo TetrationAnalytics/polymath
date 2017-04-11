@@ -152,14 +152,20 @@ EOF
 
 install_chefdk
 
-cat > "${temp_install_dir}/Berksfile" <<EOF;
+if ping -c 1 artifacts.tetrationanalytics.com &> /dev/null
+then
+  # We have access to internal network, redirect to on-premise artifactory
+  cat > "${temp_install_dir}/Berksfile" <<EOF;
 source 'http://artifacts.tetrationanalytics.com/artifactory/api/chef/supermarket'
 
 cookbook '${cookbook}'
 EOF
-
-echo "==> Downloading cookbook dependencies"
-chef exec berks vendor "${temp_install_dir}/berks-cookbooks" --berksfile="${temp_install_dir}/Berksfile"
+  echo "==> Downloading cookbook dependencies from on-premise Supermarket"
+  chef exec berks vendor "${temp_install_dir}/berks-cookbooks" --berksfile="${temp_install_dir}/Berksfile"
+else
+  echo "==> Downloading cookbook dependencies from supermarket.chef.io"
+  chef exec berks vendor "${temp_install_dir}/berks-cookbooks" 
+fi
 
 # Secrets need to go alongside cookbooks with Chef local mode
 if [ ! -z ${SECRET_STORE_URL+x} ]; then
