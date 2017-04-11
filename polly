@@ -152,8 +152,12 @@ EOF
 
 install_chefdk
 
+cat > "${temp_install_dir}/Berksfile" <<EOF;
+source 'http://artifacts.tetrationanalytics.com/artifactory/api/chef/supermarket'
+EOF
+
 echo "==> Downloading cookbook dependencies"
-chef exec berks vendor "${temp_install_dir}/berks-cookbooks"
+chef exec berks vendor "${temp_install_dir}/berks-cookbooks" --config="${temp_install_dir}/Berksfile"
 
 # Secrets need to go alongside cookbooks with Chef local mode
 if [ ! -z ${SECRET_STORE_URL+x} ]; then
