@@ -159,7 +159,7 @@ cookbook '${cookbook}'
 EOF
 
 echo "==> Downloading cookbook dependencies"
-chef exec berks vendor "${temp_install_dir}/berks-cookbooks" --config="${temp_install_dir}/Berksfile"
+chef exec berks vendor "${temp_install_dir}/berks-cookbooks" --berksfile="${temp_install_dir}/Berksfile"
 
 # Secrets need to go alongside cookbooks with Chef local mode
 if [ ! -z ${SECRET_STORE_URL+x} ]; then
