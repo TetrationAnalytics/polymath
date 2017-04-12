@@ -34,7 +34,7 @@ uninstall_chefdk_linux() {
         if [[ $distro =~ redhat|centos ]]; then 
             chefdk_package=$(rpm -qa *chefdk*)
             echo "==> Uninstalling ChefDK ${chefdk_package} on CentOS..."
-            if ! command -v sudo >/dev/nul 2>&1; then
+            if ! command -v sudo >/dev/null 2>&1; then
                 yum remove -y ${chefdk_package}
             else
                 sudo yum remove -y ${chefdk_package}
@@ -110,7 +110,7 @@ install_chefdk() {
 
 cleanup() {
   echo '==> Cleaning up...'
-  if ! command -v sudo >/dev/nul 2>&1; then
+  if ! command -v sudo >/dev/null 2>&1; then
       sudo rm -rf \"${temp_install_dir}\""
   else
       rm -rf \"${temp_install_dir}\""
