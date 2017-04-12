@@ -108,6 +108,15 @@ install_chefdk() {
     fi
 }
 
+cleanup() {
+  echo '==> Cleaning up...'
+  if ! command -v sudo >/dev/nul 2>&1; then
+      sudo rm -rf \"${temp_install_dir}\""
+  else
+      rm -rf \"${temp_install_dir}\""
+  fi    
+}
+
 args() {
     if [ $# -lt 1 ]; then
         usage
@@ -143,7 +152,7 @@ args "$@"
 clear
 
 temp_install_dir=$(mktemp -d -t polly.XXXXX)
-trap "echo '==> Cleaning up...' && rm -rf \"${temp_install_dir}\"" EXIT
+trap cleanup EXIT
 
 cat <<EOF;
 Polymath 0.1 - Reconstitute machine configs from scripts
@@ -174,7 +183,7 @@ if [ ! -z ${SECRET_STORE_URL+x} ]; then
     curl -o "${temp_install_dir}/secret_store.tgz" "${SECRET_STORE_URL}"
     mkdir -p "${temp_install_dir}/secret_store"
     tar xvf "${temp_install_dir}/secret_store.tgz" -C "${temp_install_dir}/secret_store" --strip 1
-    cp -r "${temp_install_dir}/secret_store" "${temp_install_dir}/data_bags"
+    cp -R "${temp_install_dir}/secret_store" "${temp_install_dir}/data_bags"
     rm -rf "${temp_install_dir}/secret_store"
 fi
 
