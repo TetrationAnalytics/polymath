@@ -92,10 +92,10 @@ install_chefdk_linux() {
         echo "==> Installing ChefDK ${CHEFDK_TARGET_VERSION}"
         if ! command -v sudo >/dev/nul 2>&1; then
             curl --silent --show-error https://omnitruck.chef.io/install.sh | \
-              bash -s -- -c stable -P chefdk -v ${CHEFDK_TARGET_VERSION}
+              sudo -E bash -s -- -c stable -P chefdk -v ${CHEFDK_TARGET_VERSION}
         else
             curl --silent --show-error https://omnitruck.chef.io/install.sh | \
-              sudo -E bash -s -- -c stable -P chefdk -v ${CHEFDK_TARGET_VERSION}
+              bash -s -- -c stable -P chefdk -v ${CHEFDK_TARGET_VERSION}
         fi
     fi
 }
