@@ -183,7 +183,7 @@ if [ ! -z ${SECRET_STORE_URL+x} ]; then
     curl -o "${temp_install_dir}/secret_store.tgz" "${SECRET_STORE_URL}"
     mkdir -p "${temp_install_dir}/secret_store"
     tar xvf "${temp_install_dir}/secret_store.tgz" -C "${temp_install_dir}/secret_store" --strip 1
-    cp -R "${temp_install_dir}/secret_store/data_bags/" "${temp_install_dir}/data_bags/"
+    cp -R "${temp_install_dir}/secret_store/data_bags/" "${temp_install_dir}/"
     rm -rf "${temp_install_dir}/secret_store"
 fi
 
