@@ -90,8 +90,7 @@ install_chefdk_linux() {
     esac
     if [[ "${INSTALL_CHEFDK}" -eq 1 ]]; then
         echo "==> Installing ChefDK ${CHEFDK_TARGET_VERSION}"
-        command -v sudo >/dev/null 2>&1
-        if [ $? -eq 0 ]; then
+        if [[ $EUID -ne 0 ]]; then
             curl --silent --show-error https://omnitruck.chef.io/install.sh | \
               sudo -E bash -s -- -c stable -P chefdk -v ${CHEFDK_TARGET_VERSION}
         else
@@ -111,7 +110,7 @@ install_chefdk() {
 
 cleanup() {
   echo '==> Cleaning up...'
-  if ! command -v sudo >/dev/null 2>&1; then
+  if [[ $EUID -ne 0 ]]; then
       sudo rm -rf \"${temp_install_dir}\""
   else
       rm -rf \"${temp_install_dir}\""
