@@ -167,7 +167,7 @@ then
   cat > "${temp_install_dir}/Berksfile" <<EOF;
 source 'http://artifacts.tetrationanalytics.com/artifactory/api/chef/supermarket'
 
-cookbook '${cookbook}'
+cookbook '${cookbook%::*}'
 EOF
   echo "==> Downloading cookbook dependencies from on-premise Supermarket"
   chef exec berks vendor "${temp_install_dir}/berks-cookbooks" --berksfile="${temp_install_dir}/Berksfile"
