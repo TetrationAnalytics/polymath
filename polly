@@ -9,7 +9,7 @@ fi
 CHEFDK_TARGET_VERSION=1.3.40
 
 usage() {
-    echo "usage: $(basename $0) <cookbook::recipe> [path_to_optional_json_attributes_file]"
+    echo "usage: $(basename $0) <cookbook::recipe> [path_to_optional_environment_file]"
     echo "       $(basename $0) chef - Install ChefDK"
     echo "       $(basename $0) nukechef - Remove ChefDK"
 }
@@ -108,6 +108,41 @@ install_chefdk() {
     fi
 }
 
+generate_berksfile() {
+    berksfile=$1
+    if ping -c 1 artifacts.tetrationanalytics.com &> /dev/null
+    then
+        # We have access to internal network, redirect to on-premise artifactory
+        cat > "${berksfile}" <<EOF;
+source 'http://artifacts.tetrationanalytics.com/artifactory/api/chef/supermarket'
+
+EOF
+    else
+        # We have access to internal network, redirect to on-premise artifactory
+        cat > "${berksfile}" <<EOF;
+source 'https://supermarket.chef.io'
+
+EOF
+    fi
+
+    # Parse the run_list in the form: COOKBOOK::RECIPE or
+    # recipe[COOKBOOK:RECIPE]
+    # Multiple recipes are comma-delimited
+    # 'recipe[COOKBOOK::RECIPE],recipe[COOKBOOK:RECIPE],COOKBOOK::RECIPE'
+    parse_run_list=run_list
+    IFS=',' read -ra parse_run_list <<< "${run_list}"
+    for cookbook in "${parse_run_list[@]}"; do
+        regex="recipe\[(.*)::(.*)\]"
+        if [[ $cookbook =~ $regex ]]
+        then
+            echo "cookbook '${BASH_REMATCH[1]}'" >> "${berksfile}"
+        else
+            # Truncate everything after ::
+            echo "cookbook '${cookbook%::*}'" >> "${berksfile}"
+        fi
+    done
+}
+
 cleanup() {
   echo '==> Cleaning up...'
   if [[ $EUID -ne 0 ]]; then
@@ -131,17 +166,23 @@ args() {
         exit 0
     fi
 
-    cookbook=${1}
-    json_attributes_file=${2:-}
-    if [[ -n ${json_attributes_file} ]]; then
-        if [ ! -f ${json_attributes_file} ]; then
-            json_attributes_file="${json_attributes_file}.json"
-            if [ ! -f ${json_attributes_file} ]; then
-                echo "$(basename $): Invalid json attributes file ${json_attributes_file}"
+    run_list=${1}
+    environment_file=${2:-}
+    if [[ -n ${environment_file} ]]; then
+        if [ ! -f ${environment_file} ]; then
+            environment_file="${environment_file}.json"
+            if [ ! -f ${environment_file} ]; then
+                echo "$(basename $): Invalid json attributes file ${environment_file}"
                 exit 127
             fi
         fi
-        json_attributes=" --json-attributes ${json_attributes_file}"
+        # Get filename without extension
+        environment_filename="${environment_file##*/}"
+        environment_filename_without_extension="${environment_filename%.*}"
+        environment_parm=" --environment ${environment_filename_without_extension}"
+        echo "MISCHA: ${environment_filename}"
+        echo "MISCHA: ${environment_filename_without_extension}"
+        echo "MISCHA: ${environment_parm}"
     fi
 }
 
@@ -161,20 +202,11 @@ EOF
 
 install_chefdk
 
-if ping -c 1 artifacts.tetrationanalytics.com &> /dev/null
-then
-  # We have access to internal network, redirect to on-premise artifactory
-  cat > "${temp_install_dir}/Berksfile" <<EOF;
-source 'http://artifacts.tetrationanalytics.com/artifactory/api/chef/supermarket'
+generate_berksfile "${temp_install_dir}/Berksfile"
+cat "${temp_install_dir}/Berksfile"
 
-cookbook '${cookbook%::*}'
-EOF
-  echo "==> Downloading cookbook dependencies from on-premise Supermarket"
-  chef exec berks vendor "${temp_install_dir}/berks-cookbooks" --berksfile="${temp_install_dir}/Berksfile"
-else
-  echo "==> Downloading cookbook dependencies from supermarket.chef.io"
-  chef exec berks vendor "${temp_install_dir}/berks-cookbooks" 
-fi
+echo "==> Downloading cookbook dependencies from Supermarket"
+chef exec berks vendor "${temp_install_dir}/berks-cookbooks" --berksfile="${temp_install_dir}/Berksfile"
 
 # Secrets need to go alongside cookbooks with Chef local mode
 if [ ! -z ${SECRET_STORE_URL+x} ]; then
@@ -187,7 +219,13 @@ if [ ! -z ${SECRET_STORE_URL+x} ]; then
     rm -rf "${temp_install_dir}/secret_store"
 fi
 
+if [ -f "${environment_file}" ]
+then
+    echo "==> Copying environment file ${environment_file} to ${temp_install_dir}/environments"
+    mkdir -p "${temp_install_dir}/environments"
+    cp "${environment_file}" "${temp_install_dir}/environments/"
+fi
+
 echo "==> Running chef-client in local mode"
-cmd='sudo -E chef exec chef-client --local-mode --log_level error --config-option cookbook_path="${temp_install_dir}/berks-cookbooks" --override-runlist "recipe[${cookbook}]" ${json_attributes:-}'
-echo ${cmd}
-eval ${cmd}
+set -x
+sudo -E chef exec chef-client --local-mode --log_level error --config-option cookbook_path="${temp_install_dir}/berks-cookbooks" --override-runlist ''"${run_list}"'' ${environment_parm}
