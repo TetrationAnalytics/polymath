@@ -168,6 +168,7 @@ args() {
 
     run_list=${1}
     environment_file=${2:-}
+    environment_parm=${2:-}
     if [[ -n ${environment_file} ]]; then
         if [ ! -f ${environment_file} ]; then
             environment_file="${environment_file}.json"
