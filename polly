@@ -168,6 +168,7 @@ args() {
 
     run_list=${1}
     environment_file=${2:-}
+    environment_parm=${2:-}
     if [[ -n ${environment_file} ]]; then
         if [ ! -f ${environment_file} ]; then
             environment_file="${environment_file}.json"
@@ -228,5 +229,8 @@ fi
 
 echo "==> Running chef-client in local mode"
 set -x
+if [[ -n ${environment_file} ]]; then
 sudo -E chef exec chef-client --local-mode --log_level error --config-option cookbook_path="${temp_install_dir}/berks-cookbooks" --override-runlist ''"${run_list}"''
-# sudo -E chef exec chef-client --local-mode --log_level error --config-option cookbook_path="${temp_install_dir}/berks-cookbooks" --override-runlist ''"${run_list}"'' "${environment_parm:-}"
+else
+sudo -E chef exec chef-client --local-mode --log_level error --config-option cookbook_path="${temp_install_dir}/berks-cookbooks" --override-runlist ''"${run_list}"'' "${environment_parm:-}"
+fi
