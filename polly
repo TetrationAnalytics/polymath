@@ -229,8 +229,8 @@ fi
 
 echo "==> Running chef-client in local mode"
 set -x
-if [[ -n ${environment_file} ]]; then
-sudo -E chef exec chef-client --local-mode --log_level error --config-option cookbook_path="${temp_install_dir}/berks-cookbooks" --override-runlist ''"${run_list}"'' "${environment_parm:-}"
-else
+if [[ -z "${environment_parm}" ]]; then
 sudo -E chef exec chef-client --local-mode --log_level error --config-option cookbook_path="${temp_install_dir}/berks-cookbooks" --override-runlist ''"${run_list}"''
+else
+sudo -E chef exec chef-client --local-mode --log_level error --config-option cookbook_path="${temp_install_dir}/berks-cookbooks" --override-runlist ''"${run_list}"'' "${environment_parm:-}"
 fi
