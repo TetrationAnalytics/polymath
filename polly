@@ -203,6 +203,10 @@ EOF
 
 install_chefdk
 
+echo "==> Clearing out Chef caches"
+rm -rf ~/.berkshelf
+rm -rf ~/.chef/local-mode-cache
+
 generate_berksfile "${temp_install_dir}/Berksfile"
 cat "${temp_install_dir}/Berksfile"
 
@@ -226,10 +230,6 @@ then
     mkdir -p "${temp_install_dir}/environments"
     cp "${environment_file}" "${temp_install_dir}/environments/"
 fi
-
-echo "==> Clearing out Chef caches"
-rm -rf ~/.berkshelf
-rm -rf ~/.chef/local-mode-cache
 
 echo "==> Running chef-client in local mode"
 set -x
