@@ -203,10 +203,6 @@ EOF
 
 install_chefdk
 
-echo "==> Clearing out Chef caches"
-sudo rm -rf ~/.berkshelf
-sudo rm -rf ~/.chef/local-mode-cache
-
 generate_berksfile "${temp_install_dir}/Berksfile"
 cat "${temp_install_dir}/Berksfile"
 
