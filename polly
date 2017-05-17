@@ -6,7 +6,7 @@ if [ "${DEBUG:-false}" = "true" ]; then
     set -o xtrace # -x turn on bash tracing
 fi
 
-CHEFDK_TARGET_VERSION=1.3.40
+CHEFDK_TARGET_VERSION=1.3.43
 
 usage() {
     echo "usage: $(basename $0) <cookbook::recipe> [path_to_optional_environment_file]"
