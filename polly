@@ -216,6 +216,10 @@ T="$(date +%s)"
 
 install_chefdk
 
+echo "==> Cleaning up old cache files"
+sudo rm -rf /root/.chef/local-mode-cache
+sudo rm -rf ~/.berkshelf
+
 generate_berksfile "${temp_install_dir}/Berksfile"
 cat "${temp_install_dir}/Berksfile"
 
