@@ -212,6 +212,7 @@ Polymath 0.1 - Reconstitute machine configs from scripts
 EOF
 
 notify "Starting Chef run on $(hostname) with ${run_list}"
+T="$(date +%s)"
 
 install_chefdk
 
@@ -246,4 +247,5 @@ sudo -E chef exec chef-client --local-mode --log_level error --config-option coo
 else
 sudo -E chef exec chef-client --local-mode --log_level error --config-option cookbook_path="${temp_install_dir}/berks-cookbooks" --override-runlist ${run_list} ${environment_parm}
 fi
-notify "Chef run complete on $(hostname) exit_status=$?"
+T="$(($(date +%s)-T))"
+notify "Chef run complete on $(hostname) exit_status=$?, elapsed time ${T} seconds"
