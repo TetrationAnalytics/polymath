@@ -144,6 +144,15 @@ EOF
     done
 }
 
+notify() {
+  # format message as a code block ```${msg}```
+  slack_message="\`\`\`$1\`\`\`"
+
+  if [ ! -z ${SLACK_URL+x} ]; then
+    curl -X POST --data "payload={\"text\": \"${slack_message}\"}" ${SLACK_URL}
+  fi
+}
+
 cleanup() {
   echo '==> Cleaning up...'
   if [[ $EUID -ne 0 ]]; then
@@ -202,6 +211,8 @@ Polymath 0.1 - Reconstitute machine configs from scripts
 --------------------------------------------------------
 EOF
 
+notify "Starting Chef run on $(hostname) with ${run_list}"
+
 install_chefdk
 
 generate_berksfile "${temp_install_dir}/Berksfile"
@@ -235,3 +246,4 @@ sudo -E chef exec chef-client --local-mode --log_level error --config-option coo
 else
 sudo -E chef exec chef-client --local-mode --log_level error --config-option cookbook_path="${temp_install_dir}/berks-cookbooks" --override-runlist ${run_list} ${environment_parm}
 fi
+notify "Chef run complete on $(hostname) exit_status=$?"
