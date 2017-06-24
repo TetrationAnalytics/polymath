@@ -114,8 +114,12 @@ generate_berksfile() {
     if ping -c 1 artifacts.tetrationanalytics.com &> /dev/null
     then
         # We have access to internal network, redirect to on-premise artifactory
-        cat > "${berksfile}" <<EOF;
-source 'http://artifacts.tetrationanalytics.com/artifactory/api/chef/supermarket'
+#         cat > "${berksfile}" <<EOF;
+# source 'http://artifacts.tetrationanalytics.com/artifactory/api/chef/supermarket'
+# 
+# EOF
+                cat > "${berksfile}" <<EOF;
+source 'https://supermarket.tet.wtf'
 
 EOF
     else
