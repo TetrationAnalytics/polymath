@@ -112,7 +112,7 @@ generate_berksfile() {
     berksfile=$1
     # TBD: Use ping if nc not present
     # if nc -z supermarket.tet.wtf 443 &> /dev/null
-    if ping -c1 -w3 artifacts.tet.wtf >/dev/null 2>&1
+    if [ -e /usr/bin/nc ] && nc -z artifacts.tet.wtf 443 >/dev/null 2>&1 || ping -c1 -w3 artifacts.tet.wtf >/dev/null 2>&1
     then
         # We have access to internal network, redirect to on-premise artifactory
 #         cat > "${berksfile}" <<EOF;
