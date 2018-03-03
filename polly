@@ -220,7 +220,7 @@ chef exec berks vendor "${temp_install_dir}/berks-cookbooks" --berksfile="${temp
 if [ ! -z ${SECRET_STORE_URL+x} ]; then
     echo "==> Downloading secret store"
     rm -rf "${temp_install_dir}/secret_store"
-    curl -o "${temp_install_dir}/secret_store.tgz" "${SECRET_STORE_URL}"
+    curl -Lo "${temp_install_dir}/secret_store.tgz" "${SECRET_STORE_URL}"
     mkdir -p "${temp_install_dir}/secret_store"
     tar xvf "${temp_install_dir}/secret_store.tgz" -C "${temp_install_dir}/secret_store" --strip 1
     cp -R "${temp_install_dir}/secret_store/data_bags/" "${temp_install_dir}/data_bags/"
