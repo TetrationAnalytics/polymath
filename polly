@@ -7,7 +7,7 @@ if [ "${DEBUG:-false}" = "true" ]; then
 fi
 
 CHEFDK_TARGET_VERSION=2.5.3
-CHEF_SUPERMARKET=${CHEF_SUPERMARKET:-https://supermarket.tet.wtf}
+CHEF_SUPERMARKET=${CHEF_SUPERMARKET:-https://supermarket.ocean.af}
 
 usage() {
     echo "usage: $(basename $0) <cookbook::recipe> [path_to_optional_environment_file]"
