@@ -126,10 +126,18 @@ EOF
         regex="recipe\[(.*)::(.*)\]"
         if [[ $cookbook =~ $regex ]]
         then
-            echo "cookbook '${BASH_REMATCH[1]}'" >> "${berksfile}"
+            # Do not add a cookbook name if already present
+            if ! grep -Fq "${BASH_REMATCH[1]}" "${berksfile}"
+            then
+                echo "cookbook '${BASH_REMATCH[1]}'" >> "${berksfile}"
+            fi    
         else
-            # Truncate everything after ::
-            echo "cookbook '${cookbook%::*}'" >> "${berksfile}"
+            # Do not add a cookbook name if already present
+            if ! grep -Fq "${cookbook%::*}" "${berksfile}"
+            then
+                # Truncate everything after ::
+                echo "cookbook '${cookbook%::*}'" >> "${berksfile}"
+            fi    
         fi
     done
 }
@@ -181,9 +189,6 @@ args() {
         environment_filename="${environment_file##*/}"
         environment_filename_without_extension="${environment_filename%.*}"
         environment_parm=" --environment ${environment_filename_without_extension}"
-        echo "MISCHA: ${environment_filename}"
-        echo "MISCHA: ${environment_filename_without_extension}"
-        echo "MISCHA: ${environment_parm}"
     fi
 }
 
