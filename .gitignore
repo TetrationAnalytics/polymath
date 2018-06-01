@@ -1,0 +1,11 @@
+.idea/
+.DS_Store
+
+# test kitchen
+.kitchen/
+.kitchen.local.yml
+
+.terraform
+*.tfstate
+*.tfstate.backup
+terraform.tfvars

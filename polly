@@ -6,13 +6,16 @@ if [ "${DEBUG:-false}" = "true" ]; then
     set -o xtrace # -x turn on bash tracing
 fi
 
-CHEFDK_TARGET_VERSION=2.5.3
+CHEFDK_TARGET_VERSION=3.0.36
+CHEF_WORKSTATION_TARGET_VERSION=0.1.120
 CHEF_SUPERMARKET=${CHEF_SUPERMARKET:-https://supermarket.ocean.af}
 
 usage() {
     echo "usage: $(basename $0) <cookbook::recipe> [path_to_optional_environment_file]"
-    echo "       $(basename $0) chef - Install ChefDK"
-    echo "       $(basename $0) nukechef - Remove ChefDK"
+    echo "       $(basename $0) chefdk - Install ChefDK"
+    echo "       $(basename $0) nukechefdk - Remove ChefDK"
+    echo "       $(basename $0) chef - Install Chef Workstation"
+    echo "       $(basename $0) nukechef - Remove Chef Workstation"
 }
 
 uninstall_chefdk_mac() {
@@ -39,6 +42,14 @@ uninstall_chefdk_linux() {
                 yum remove -y ${chefdk_package}
             else
                 sudo yum remove -y ${chefdk_package}
+            fi
+        elif [[ $distro =~ debian ]]; then
+            chefdk_package=chefdk
+            echo "==> Uninstalling ChefDK ${chefdk_package} on Ubuntu..."
+            if ! command -v sudo >/dev/null 2>&1; then
+                dpkg -P "${chefdk_package}"
+            else
+                sudo dpkg -P "${chefdk_package}"
             fi
         fi
     else
@@ -109,6 +120,118 @@ install_chefdk() {
     fi
 }
 
+uninstall_chef_workstation_mac() {
+    chef_workstation_installed_version=$(chefx --version 2>/dev/null | awk '{print $NF}')
+    if [ "${chef_workstation_installed_version}" != "" ]; then
+        echo "==> Uninstalling Chef Workstation ${chef_workstation_installed_version} on macOS..."
+        sudo rm -rf /opt/chef-workstation
+        sudo pkgutil --forget com.getchef.pkg.chef-workstation
+        sudo find /usr/bin /usr/local/bin -lname '/opt/chef-workstation/*' -delete
+        rm -rf ~/.chef-workstation
+    else
+        echo "==> Chef Workstation is not installed, skipping"
+    fi
+}
+
+uninstall_chef_workstation_linux() {
+    chef_workstation_installed_version=$(chefx --version 2>/dev/null | awk '{print $NF}')
+    if [ "${chef_workstation_installed_version}" != "" ]; then
+        distro==$(ls -d /etc/[A-Za-z]*[_-][rv]e[lr]* | grep -v "lsb" | cut -d'/' -f3 | cut -d'-' -f1 | cut -d'_' -f1)
+        if [[ $distro =~ redhat|centos ]]; then
+            chef_workstation_package=$(rpm -qa *chef-workstation*)
+            echo "==> Uninstalling Chef Workstation ${chef_workstation_package} on CentOS..."
+            if ! command -v sudo >/dev/null 2>&1; then
+                yum remove -y ${chef_workstation_package}
+            else
+                sudo yum remove -y ${chef_workstation_package}
+            fi
+        elif [[ $distro =~ debian ]]; then
+            chef_workstation_package=chef-workstation
+            echo "==> Uninstalling Chef Workstation ${chef_workstation_package} on Ubuntu..."
+            if ! command -v sudo >/dev/null 2>&1; then
+                dpkg -P ${chef_workstation_package}
+            else
+                dpkg -P ${chef_workstation_package}
+            fi
+        fi
+    else
+        echo "==> Chef Workstation is not installed, skipping"
+    fi
+}
+
+uninstall_chef_workstation() {
+    if [ "$(uname)" = "Darwin" ]; then
+        uninstall_chef_workstation_mac
+    elif [ "$(uname)" = "Linux" ]; then
+        uninstall_chef_workstation_linux
+    fi
+}
+
+install_chef_workstation_mac() {
+    chef_workstation_installed_version=$(chefx --version 2>/dev/null | awk '{print $NF}')
+    case "${chef_workstation_installed_version}" in
+        "${CHEF_WORKSTATION_TARGET_VERSION}")
+            echo "==> Chef Workstation ${CHEF_WORKSTATION_TARGET_VERSION} is already installed, skipping"
+            INSTALL_CHEF_WORKSTATION=0;;
+        "")
+            # Chef Workstation is not installed
+            INSTALL_CHEF_WORKSTATION=1;;
+        *)
+            echo "==> Replacing Chef Workstation ${chef_workstation_installed_version} with ${CHEF_WORKSTATION_TARGET_VERSION}"
+            uninstall_chef_workstation
+            INSTALL_CHEF_WORKSTATION=1;;
+    esac
+    if [[ "${INSTALL_CHEF_WORKSTATION}" -eq 1 ]]; then
+        echo "==> Installing Chef Workstation ${CHEFDK_TARGET_VERSION}"
+        curl --silent --show-error https://omnitruck.chef.io/install.sh | \
+          sudo -E bash -s -- -c stable -P chef-workstation -v ${CHEF_WORKSTATION_TARGET_VERSION}
+        mkdir -p "$HOME/.chef-workstation"
+        cat > "$HOME/.chef-workstation/config.toml" <<EOF;
+[telemetry]
+enable=false
+EOF
+    fi
+}
+
+install_chef_workstation_linux() {
+    chef_workstation_installed_version=$(chefx --version 2>/dev/null | awk '{print $NF}')
+    case "${chef_workstation_installed_version}" in
+        "${CHEF_WORKSTATION_TARGET_VERSION}")
+            echo "==> Chef Workstation ${CHEF_WORKSTATION_TARGET_VERSION} is already installed, skipping"
+            INSTALL_CHEF_WORKSTATION=0;;
+        "")
+            # ChefDK is not installed
+            INSTALL_CHEF_WORKSTATION=1;;
+        *)
+            echo "==> Replacing Chef Workstation ${chef_workstation_installed_version} with ${CHEF_WORKSTATION_TARGET_VERSION}"
+            uninstall_chefdk
+            INSTALL_CHEF_WORKSTATION=1;;
+    esac
+    if [[ "${INSTALL_CHEF_WORKSTATION}" -eq 1 ]]; then
+        echo "==> Installing Chef Workstation ${CHEF_WORKSTATION_TARGET_VERSION}"
+        if [[ $EUID -ne 0 ]]; then
+            curl --silent --show-error https://omnitruck.chef.io/install.sh | \
+              sudo -E bash -s -- -c stable -P chef-workstation -v ${CHEF_WORKSTATION_TARGET_VERSION}
+        else
+            curl --silent --show-error https://omnitruck.chef.io/install.sh | \
+              bash -s -- -c stable -P chef-workstation -v ${CHEF_WORKSTATION_TARGET_VERSION}
+        fi
+        mkdir -p "$HOME/.chef-workstation"
+        cat > "$HOME/.chef-workstation/config.toml" <<EOF;
+[telemetry]
+enable=false
+EOF
+    fi
+}
+
+install_chef_workstation() {
+    if [ "$(uname)" = "Darwin" ]; then
+        install_chef_workstation_mac
+    elif [ "$(uname)" = "Linux" ]; then
+        install_chef_workstation_linux
+    fi
+}
+
 generate_berksfile() {
     berksfile=$1
     cat > "${berksfile}" <<EOF;
@@ -167,9 +290,15 @@ args() {
     fi
 
     if [ "${1}" = "nukechef" ]; then
-        uninstall_chefdk
+        uninstall_chef_workstation
         exit 0
     elif [ "${1}" = "chef" ]; then
+        install_chef_workstation
+        exit 0
+    elif [ "${1}" = "nukechefdk" ]; then
+        uninstall_chefdk
+        exit 0
+    elif [ "${1}" = "chefdk" ]; then
         install_chefdk
         exit 0
     fi
