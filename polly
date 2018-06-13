@@ -338,7 +338,8 @@ EOF
 notify "Starting Chef run on $(hostname) with ${run_list}"
 T="$(date +%s)"
 
-install_chefdk
+uninstall_chefdk
+install_chef_workstation
 
 echo "==> Cleaning up old cache files"
 sudo rm -rf /root/.chef/local-mode-cache
