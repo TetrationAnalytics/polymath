@@ -36,7 +36,7 @@ uninstall_chefdk_linux() {
     if [ "${chefdk_installed_version}" != "" ]; then
         distro==$(ls -d /etc/[A-Za-z]*[_-][rv]e[lr]* | grep -v "lsb" | cut -d'/' -f3 | cut -d'-' -f1 | cut -d'_' -f1)
         if [[ $distro =~ redhat|centos ]]; then 
-            chefdk_package=$(rpm -qa *chefdk*)
+            chefdk_package=$(rpm -qa chefdk)
             echo "==> Uninstalling ChefDK ${chefdk_package} on CentOS..."
             if ! command -v sudo >/dev/null 2>&1; then
                 yum remove -y ${chefdk_package}
