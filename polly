@@ -209,7 +209,7 @@ install_chef_workstation_linux() {
     esac
     if [[ "${INSTALL_CHEF_WORKSTATION}" -eq 1 ]]; then
         echo "==> Installing Chef Workstation ${CHEF_WORKSTATION_TARGET_VERSION}"
-        if [[ -z "${INSTALL_CHEF_WORKSTATION_SCRIPT}" ]]; then
+        if [[ ! -z "${INSTALL_CHEF_WORKSTATION_SCRIPT}" ]]; then
             bash <(curl -fsSL "#{INSTALL_CHEF_WORKSTATION_SCRIPT}")
         else    
             if [[ $EUID -ne 0 ]]; then
