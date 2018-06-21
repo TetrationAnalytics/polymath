@@ -151,7 +151,7 @@ uninstall_chef_workstation_linux() {
             if ! command -v sudo >/dev/null 2>&1; then
                 dpkg -P ${chef_workstation_package}
             else
-                dpkg -P ${chef_workstation_package}
+                sudo dpkg -P ${chef_workstation_package}
             fi
         fi
     else
