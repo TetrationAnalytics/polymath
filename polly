@@ -102,13 +102,17 @@ install_chefdk_linux() {
     esac
     if [[ "${INSTALL_CHEFDK}" -eq 1 ]]; then
         echo "==> Installing ChefDK ${CHEFDK_TARGET_VERSION}"
-        if [[ $EUID -ne 0 ]]; then
-            curl --silent --show-error https://omnitruck.chef.io/install.sh | \
-              sudo -E bash -s -- -c stable -P chefdk -v ${CHEFDK_TARGET_VERSION}
-        else
-            curl --silent --show-error https://omnitruck.chef.io/install.sh | \
-              bash -s -- -c stable -P chefdk -v ${CHEFDK_TARGET_VERSION}
-        fi
+        if [[ ! -z "${CHEFDK_INSTALL_SCRIPT:=}" ]]; then
+            bash <(curl -fsSL "${CHEFDK_INSTALL_SCRIPT}")
+        else  
+            if [[ $EUID -ne 0 ]]; then
+                curl --silent --show-error https://omnitruck.chef.io/install.sh | \
+                  sudo -E bash -s -- -c stable -P chefdk -v ${CHEFDK_TARGET_VERSION}
+            else
+                curl --silent --show-error https://omnitruck.chef.io/install.sh | \
+                  bash -s -- -c stable -P chefdk -v ${CHEFDK_TARGET_VERSION}
+            fi
+        fi    
     fi
 }
 
@@ -209,8 +213,8 @@ install_chef_workstation_linux() {
     esac
     if [[ "${INSTALL_CHEF_WORKSTATION}" -eq 1 ]]; then
         echo "==> Installing Chef Workstation ${CHEF_WORKSTATION_TARGET_VERSION}"
-        if [[ ! -z "${INSTALL_CHEF_WORKSTATION_SCRIPT:=}" ]]; then
-            bash <(curl -fsSL "${INSTALL_CHEF_WORKSTATION_SCRIPT}")
+        if [[ ! -z "${CHEF_WORKSTATION_INSTALL_SCRIPT:=}" ]]; then
+            bash <(curl -fsSL "${CHEF_WORKSTATION_INSTALL_SCRIPT}")
         else    
             if [[ $EUID -ne 0 ]]; then
                 curl --silent --show-error https://omnitruck.chef.io/install.sh | \
