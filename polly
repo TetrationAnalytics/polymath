@@ -6,8 +6,8 @@ if [ "${DEBUG:-false}" = "true" ]; then
     set -o xtrace # -x turn on bash tracing
 fi
 
-CHEFDK_TARGET_VERSION=3.0.36
-CHEF_WORKSTATION_TARGET_VERSION=0.1.133
+CHEFDK_TARGET_VERSION=3.1.0
+CHEF_WORKSTATION_TARGET_VERSION=0.1.150
 CHEF_SUPERMARKET=${CHEF_SUPERMARKET:-https://supermarket.ocean.af}
 
 usage() {
