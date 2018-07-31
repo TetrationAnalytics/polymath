@@ -125,7 +125,7 @@ install_chefdk() {
 }
 
 uninstall_chef_workstation_mac() {
-    chef_workstation_installed_version=$(chefx --version 2>/dev/null | awk '{print $NF}')
+    chef_workstation_installed_version=$(cat /opt/chef-workstation/version-manifest.txt | head -n 1 | cut -d ' ' -f 2)
     if [ "${chef_workstation_installed_version}" != "" ]; then
         echo "==> Uninstalling Chef Workstation ${chef_workstation_installed_version} on macOS..."
         sudo rm -rf /opt/chef-workstation
@@ -138,7 +138,7 @@ uninstall_chef_workstation_mac() {
 }
 
 uninstall_chef_workstation_linux() {
-    chef_workstation_installed_version=$(chefx --version 2>/dev/null | awk '{print $NF}')
+    chef_workstation_installed_version=$(cat /opt/chef-workstation/version-manifest.txt | head -n 1 | cut -d ' ' -f 2)
     if [ "${chef_workstation_installed_version}" != "" ]; then
         distro==$(ls -d /etc/[A-Za-z]*[_-][rv]e[lr]* | grep -v "lsb" | cut -d'/' -f3 | cut -d'-' -f1 | cut -d'_' -f1)
         if [[ $distro =~ redhat|centos ]]; then
@@ -172,7 +172,7 @@ uninstall_chef_workstation() {
 }
 
 install_chef_workstation_mac() {
-    chef_workstation_installed_version=$(chefx --version 2>/dev/null | awk '{print $NF}')
+    chef_workstation_installed_version=$(cat /opt/chef-workstation/version-manifest.txt | head -n 1 | cut -d ' ' -f 2)
     case "${chef_workstation_installed_version}" in
         "${CHEF_WORKSTATION_TARGET_VERSION}")
             echo "==> Chef Workstation ${CHEF_WORKSTATION_TARGET_VERSION} is already installed, skipping"
@@ -198,7 +198,7 @@ EOF
 }
 
 install_chef_workstation_linux() {
-    chef_workstation_installed_version=$(chefx --version 2>/dev/null | awk '{print $NF}')
+    chef_workstation_installed_version=$(cat /opt/chef-workstation/version-manifest.txt | head -n 1 | cut -d ' ' -f 2)
     case "${chef_workstation_installed_version}" in
         "${CHEF_WORKSTATION_TARGET_VERSION}")
             echo "==> Chef Workstation ${CHEF_WORKSTATION_TARGET_VERSION} is already installed, skipping"
