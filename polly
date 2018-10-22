@@ -77,7 +77,7 @@ install_chef_workstation_mac() {
             INSTALL_CHEF_WORKSTATION=1;;
     esac
     if [[ "${INSTALL_CHEF_WORKSTATION}" -eq 1 ]]; then
-        echo "==> Installing Chef Workstation ${CHEFDK_TARGET_VERSION}"
+        echo "==> Installing Chef Workstation ${CHEF_WORKSTATION_TARGET_VERSION}"
         curl --silent --show-error https://omnitruck.chef.io/install.sh | \
           sudo -E bash -s -- -c stable -P chef-workstation -v ${CHEF_WORKSTATION_TARGET_VERSION}
         mkdir -p "$HOME/.chef-workstation"
