@@ -11,8 +11,6 @@ CHEF_SUPERMARKET=${CHEF_SUPERMARKET:-https://supermarket.ocean.af}
 
 usage() {
     echo "usage: $(basename $0) <cookbook::recipe> [path_to_optional_environment_file]"
-    echo "       $(basename $0) chefdk - Install ChefDK"
-    echo "       $(basename $0) nukechefdk - Remove ChefDK"
     echo "       $(basename $0) chef - Install Chef Workstation"
     echo "       $(basename $0) nukechef - Remove Chef Workstation"
 }
@@ -97,11 +95,10 @@ install_chef_workstation_linux() {
             echo "==> Chef Workstation ${CHEF_WORKSTATION_TARGET_VERSION} is already installed, skipping"
             INSTALL_CHEF_WORKSTATION=0;;
         "")
-            # ChefDK is not installed
+            # Chef Workstation is not installed
             INSTALL_CHEF_WORKSTATION=1;;
         *)
             echo "==> Replacing Chef Workstation ${chef_workstation_installed_version} with ${CHEF_WORKSTATION_TARGET_VERSION}"
-            uninstall_chefdk
             INSTALL_CHEF_WORKSTATION=1;;
     esac
     if [[ "${INSTALL_CHEF_WORKSTATION}" -eq 1 ]]; then
@@ -233,7 +230,6 @@ EOF
 notify "Starting Chef run on $(hostname) with ${run_list}"
 T="$(date +%s)"
 
-uninstall_chefdk
 install_chef_workstation
 
 echo "==> Cleaning up old cache files"
