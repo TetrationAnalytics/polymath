@@ -109,6 +109,6 @@ function Polly {
 
   Remove-Item env:BERKSHELF_CHEF_CONFIG
 }
-}
 set-alias polly -value Polly
 export-modulemember -function 'Polly' -alias 'polly'
+}
