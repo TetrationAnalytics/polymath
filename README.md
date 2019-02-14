@@ -4,7 +4,7 @@
 
 Reconstitute Linux and macOS machine configurations via scripts
 
-## Run scripts via
+## Linux - Run scripts via
 
 ```
 # polly <cookbook_name>
@@ -19,4 +19,10 @@ bash <(curl -fsSL https://raw.githubusercontent.com/TetrationAnalytics/polymath/
 
 # Install Chef
 bash <(curl -fsSL https://raw.githubusercontent.com/TetrationAnalytics/polymath/master/polly) chef
+```
+
+## Windows - Run scripts via
+
+```
+invoke-restmethod https://raw.githubusercontent.com/TetrationAnalytics/polymath/master/polly.ps1 | iex
 ```
