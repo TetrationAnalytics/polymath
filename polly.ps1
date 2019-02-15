@@ -32,7 +32,6 @@ New-Module -name BootstrapChefWorkstation -ScriptBlock {
         $latest_info = $getMetadata.Content
         $CHEF_WORKSTATION_LATEST_PATTERN = "version\s(\d{1,2}\.\d{1,2}\.\d{1,2})"
         $targetChefWorkstation = [regex]::match($latest_info, $CHEF_WORKSTATION_LATEST_PATTERN).Groups[1].Value
-        Write-Host "Hlloe $targetChefWorkstation"
 
         $omniUrl = "https://omnitruck.chef.io/install.ps1"
 
