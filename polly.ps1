@@ -93,6 +93,16 @@ New-Module -name BootstrapChefWorkstation -ScriptBlock {
             if ( -not $? ) { promptContinue "Error uninstalling Chef Workstation $installedVersion" }
         }
     }
+    
+    function generate_berksfile {
+        Param(
+            [string] $berksfile_dir
+        )
+
+        $berksfilePath = Join-Path -path $berksfile_dir -childPath 'Berksfile'
+        # Write out a local Berksfile for Berkshelf to use
+        $berksfile | Out-File -FilePath $berksfilePath -Encoding ASCII
+    }
 
     function Polymath {
         Param(
@@ -114,6 +124,20 @@ New-Module -name BootstrapChefWorkstation -ScriptBlock {
         Write-Host "--------------------------------------------------------"
         
         install_chef_workstation
+        
+        $tempInstallDir = Join-Path -path $env:TEMP -childpath 'polymath'
+
+        # create the temporary installation directory
+        if (!(Test-Path $tempInstallDir -pathType container)) {
+            New-Item -ItemType 'directory' -path $tempInstallDir
+        }
+
+        generate_berksfile $tempInstallDir
+
+        # Cleanup
+        # if (Test-Path $tempInstallDir) {
+        #     Remove-Item -Recurse $tempInstallDir
+        # }
     }
 
     Set-Alias polly -Value Polymath
