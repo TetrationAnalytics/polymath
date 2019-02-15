@@ -165,6 +165,20 @@ source '$chef_supermarket'
         Write-Host "==> Downloading cookbook dependencies from Supermarket"
         chef exec berks vendor "$tempInstallDir\berks-cookbooks" --berksfile="$tempInstallDir\Berksfile"
         if ( -not $? ) { Pop-Location;  die "Error running berks to download cookbooks." }
+        
+         # Secrets need to go alongside cookbooks with Chef local mode
+        If($Env:SECRET_STORE_URL -ne $null -and $Env:SECRET_STORE_USERNAME -ne $null -and $Env:SECRET_STORE_PASSWORD -ne $null) {
+            Write-Host "==> Downloading secret store"
+            Remove-Item "$tempInstallDir\data_bags" -Recurse -ErrorAction Ignore
+            Remove-Item "$tempInstallDir\secret_store-master" -Recurse -ErrorAction Ignore
+            $webclient = New-Object System.Net.WebClient
+            $basic = [System.Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes($Env:SECRET_STORE_USERNAME + ":" + $Env:SECRET_STORE_PASSWORD));
+            $webclient.Headers["Authorization"] = "Basic $basic"
+            $webclient.DownloadFile($Env:SECRET_STORE_URL, "$tempInstallDir\secret_store.zip")
+            Add-Type -assembly "system.io.compression.filesystem"
+            [io.compression.zipfile]::ExtractToDirectory("$tempInstallDir\secret_store.zip", "$tempInstallDir")
+            robocopy "$tempInstallDir\secret_store-master\data_bags" "$tempInstallDir\data_bags" /E
+        } Else {
 
         # Cleanup
         if (Test-Path $tempInstallDir) {
