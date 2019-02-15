@@ -159,7 +159,7 @@ source '$chef_supermarket'
         generate_berksfile $tempInstallDir https://supermarket.ocean.af $run_list
         
         # Add ChefDK to the path
-        $env:Path += ";C:\opscode\chefdk\bin"
+        $env:Path += ";C:\opscode\chef-workstation\bin"
 
         # Install the bootstrap cookbooks using Berkshelf
         Write-Host "==> Downloading cookbook dependencies from Supermarket"
