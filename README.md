@@ -28,3 +28,15 @@ invoke-restmethod https://raw.githubusercontent.com/TetrationAnalytics/polymath/
 polly chef
 polly nukechef
 ```
+
+Can also remove or install Chef without running a script:
+
+```
+# Remove Chef
+invoke-restmethod https://raw.githubusercontent.com/TetrationAnalytics/polymath/master/polly.ps1 | iex
+polly nukechef
+
+# Install Chef
+invoke-restmethod https://raw.githubusercontent.com/TetrationAnalytics/polymath/master/polly.ps1 | iex
+polly chef
+```
