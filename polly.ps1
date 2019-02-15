@@ -59,10 +59,10 @@ New-Module -name BootstrapChefWorkstation -ScriptBlock {
              if ( -not $? ) { die "Error downloading $omniUrl. Do you need to set `$env:http_proxy ?" }
             }
             $installScript | Invoke-Expression
-            # if ( -not $? ) { die "Error running installation script" }
-            # Write-Host "Installing Chef Workstation $targetChefWorkstation. This will take several minutes..."
-            # install -channel stable -project chef-workstation -version $targetChefWorkstation
-            # if ( -not $? ) { die "Error installing Chef Workstation $targetChefWorkstation" }
+            if ( -not $? ) { die "Error running installation script" }
+            Write-Host "Installing Chef Workstation $targetChefWorkstation. This will take several minutes..."
+            install -channel stable -project chef-workstation -version $targetChefWorkstation
+            if ( -not $? ) { die "Error installing Chef Workstation $targetChefWorkstation" }
         }
     }
 
