@@ -108,7 +108,12 @@ New-Module -name BootstrapChefWorkstation -ScriptBlock {
             Return
         }
 
-        Write-Host "Hi"
+        Clear-Host
+
+        Write-Host "Polymath 0.1 - Reconstitute machine configs from scripts"
+        Write-Host "--------------------------------------------------------"
+        
+        install_chef_workstation
     }
 
     Set-Alias polly -Value Polymath
