@@ -118,7 +118,7 @@ source '$chef_supermarket'
             # Make sure list of cookbook names is unique
             # berks errors if duplicate cookbook names are in a Berksfile
             If($cookbook_list -notcontains $cookbook_name) {
-                $cookbook_list.add($cookbook_name)
+                [void]$cookbook_list.add($cookbook_name)
             }
         }
         
