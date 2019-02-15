@@ -96,15 +96,27 @@ New-Module -name BootstrapChefWorkstation -ScriptBlock {
     
     function generate_berksfile {
         Param(
-            [string] $berksfile_dir
+            [string] $berksfile_dir,
+            [string] $chef_supermarket,
+            [string] $run_list
         )
 
         $berksfile = @"
-        source 'https://supermarket.chef.io'
+source '$chef_supermarket'
+
 "@
         $berksfilePath = Join-Path -path $berksfile_dir -childPath 'Berksfile'
         # Write out a local Berksfile for Berkshelf to use
         $berksfile | Out-File -FilePath $berksfilePath -Encoding ASCII
+
+        $run_list.Split(",") | ForEach {
+            $cookbook_name = $_
+            If($_.lastIndexOf('::') -ne -1) {
+                $cookbook_name = $_.Substring(0, $_.lastIndexOf('::'))
+            }
+            $cookbook_entry = "cookbook '$cookbook_name'"
+            $cookbook_entry | Add-Content $berksfilePath -Encoding ASCII
+        }
     }
 
     function Polymath {
@@ -135,7 +147,7 @@ New-Module -name BootstrapChefWorkstation -ScriptBlock {
             New-Item -ItemType 'directory' -path $tempInstallDir
         }
 
-        generate_berksfile $tempInstallDir
+        generate_berksfile $tempInstallDir https://supermarket.ocean.af $run_list
 
         # Cleanup
         if (Test-Path $tempInstallDir) {
