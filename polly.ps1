@@ -109,13 +109,22 @@ source '$chef_supermarket'
         # Write out a local Berksfile for Berkshelf to use
         $berksfile | Out-File -FilePath $berksfilePath -Encoding ASCII
 
+        $cookbook_list = New-Object System.Collections.ArrayList
         $run_list.Split(",") | ForEach {
             $cookbook_name = $_
             If($_.lastIndexOf('::') -ne -1) {
                 $cookbook_name = $_.Substring(0, $_.lastIndexOf('::'))
             }
-            $cookbook_entry = "cookbook '$cookbook_name'"
-            $cookbook_entry | Add-Content $berksfilePath -Encoding ASCII
+            # Make sure list of cookbook names is unique
+            # berks errors if duplicate cookbook names are in a Berksfile
+            If($cookbook_list -notcontains $cookbook_name) {
+                $cookbook_list.add($cookbook_name)
+            }
+        }
+        
+        ForEach ($cookbook_name in $cookbook_list) {
+           $cookbook_entry = "cookbook '$cookbook_name'"
+           $cookbook_entry | Add-Content $berksfilePath -Encoding ASCII
         }
     }
 
