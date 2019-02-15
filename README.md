@@ -25,4 +25,6 @@ bash <(curl -fsSL https://raw.githubusercontent.com/TetrationAnalytics/polymath/
 
 ```
 invoke-restmethod https://raw.githubusercontent.com/TetrationAnalytics/polymath/master/polly.ps1 | iex
+polly chef
+polly nukechef
 ```
