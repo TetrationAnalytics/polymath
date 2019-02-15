@@ -178,7 +178,7 @@ source '$chef_supermarket'
             Add-Type -assembly "system.io.compression.filesystem"
             [io.compression.zipfile]::ExtractToDirectory("$tempInstallDir\secret_store.zip", "$tempInstallDir")
             robocopy "$tempInstallDir\secret_store-master\data_bags" "$tempInstallDir\data_bags" /E
-        } Else {
+        }
 
         # Cleanup
         if (Test-Path $tempInstallDir) {
