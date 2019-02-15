@@ -99,6 +99,9 @@ New-Module -name BootstrapChefWorkstation -ScriptBlock {
             [string] $berksfile_dir
         )
 
+        $berksfile = @"
+        source 'https://supermarket.chef.io'
+"@
         $berksfilePath = Join-Path -path $berksfile_dir -childPath 'Berksfile'
         # Write out a local Berksfile for Berkshelf to use
         $berksfile | Out-File -FilePath $berksfilePath -Encoding ASCII
@@ -135,9 +138,9 @@ New-Module -name BootstrapChefWorkstation -ScriptBlock {
         generate_berksfile $tempInstallDir
 
         # Cleanup
-        # if (Test-Path $tempInstallDir) {
-        #     Remove-Item -Recurse $tempInstallDir
-        # }
+        if (Test-Path $tempInstallDir) {
+            Remove-Item -Recurse $tempInstallDir
+        }
     }
 
     Set-Alias polly -Value Polymath
