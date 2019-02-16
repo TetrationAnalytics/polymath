@@ -179,6 +179,18 @@ source '$chef_supermarket'
             [io.compression.zipfile]::ExtractToDirectory("$tempInstallDir\secret_store.zip", "$tempInstallDir")
             robocopy "$tempInstallDir\secret_store-master\data_bags" "$tempInstallDir\data_bags" /E
         }
+        
+        If($environment_file -ne $null -and $environment_file -ne '') {
+            Write-Host "==> Copying environment file $environment_file to $tempInstallDir\environments"
+            md -Force "$tempInstallDir\environments"
+            Copy-Item "$environment_file" -Destination "$tempInstallDir\environments"
+
+            $environment_parm = [io.path]::GetFileNameWithoutExtension("$environment_file")
+
+            chef exec chef-client --local-mode --log_level error --config-option cookbook_path="$tempInstallDir\berks-cookbooks" --override-runlist $run_list --environment $environment_parm
+        } else {
+            chef exec chef-client --local-mode --log_level error --config-option cookbook_path="$tempInstallDir\berks-cookbooks" --override-runlist $run_list
+        }
 
         # Cleanup
         if (Test-Path $tempInstallDir) {
