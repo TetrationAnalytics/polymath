@@ -79,7 +79,7 @@ install_chef_workstation_mac() {
     if [[ "${INSTALL_CHEF_WORKSTATION}" -eq 1 ]]; then
         echo "==> Installing Chef Workstation ${CHEF_WORKSTATION_TARGET_VERSION}"
         curl --silent --show-error https://omnitruck.chef.io/install.sh | \
-          sudo -E bash -s -- -c stable -P chef-workstation -v ${CHEF_WORKSTATION_TARGET_VERSION}
+            sudo -E bash -s -- -c stable -P chef-workstation -v ${CHEF_WORKSTATION_TARGET_VERSION}
         mkdir -p "$HOME/.chef-workstation"
         cat > "$HOME/.chef-workstation/config.toml" <<EOF;
 [telemetry]
@@ -105,13 +105,13 @@ install_chef_workstation_linux() {
         echo "==> Installing Chef Workstation ${CHEF_WORKSTATION_TARGET_VERSION}"
         if [[ ! -z "${CHEF_WORKSTATION_INSTALL_SCRIPT:=}" ]]; then
             bash <(curl -fsSL "${CHEF_WORKSTATION_INSTALL_SCRIPT}")
-        else    
+        else
             if [[ $EUID -ne 0 ]]; then
                 curl --silent --show-error https://omnitruck.chef.io/install.sh | \
-                  sudo -E bash -s -- -c stable -P chef-workstation -v ${CHEF_WORKSTATION_TARGET_VERSION}
+                    sudo -E bash -s -- -c stable -P chef-workstation -v ${CHEF_WORKSTATION_TARGET_VERSION}
             else
                 curl --silent --show-error https://omnitruck.chef.io/install.sh | \
-                  bash -s -- -c stable -P chef-workstation -v ${CHEF_WORKSTATION_TARGET_VERSION}
+                    bash -s -- -c stable -P chef-workstation -v ${CHEF_WORKSTATION_TARGET_VERSION}
             fi
         fi
         mkdir -p "$HOME/.chef-workstation"
@@ -122,9 +122,27 @@ EOF
     fi
 }
 
+# There is no chef-workstation for SuSe
+install_chef_workstation_suse() {
+    echo "==> Installing Chef DK"
+    if [[ ! -z "${CHEF_WORKSTATION_INSTALL_SCRIPT:=}" ]]; then
+        bash <(curl -fsSL "${CHEF_WORKSTATION_INSTALL_SCRIPT}")
+    else
+        if [[ $EUID -ne 0 ]]; then
+            curl --silent --show-error https://omnitruck.chef.io/install.sh | \
+                sudo -E bash -s -- -c stable -P chefdk
+        else
+            curl --silent --show-error https://omnitruck.chef.io/install.sh | \
+                bash -s -- -c stable -P chefdk
+        fi
+    fi
+}
+
 install_chef_workstation() {
     if [ "$(uname)" = "Darwin" ]; then
         install_chef_workstation_mac
+    elif [ -f "/etc/SuSE-release" ]; then
+        install_chef_workstation_suse
     elif [ "$(uname)" = "Linux" ]; then
         install_chef_workstation_linux
     fi
@@ -164,21 +182,21 @@ EOF
 }
 
 notify() {
-  # format message as a code block ```${msg}```
-  slack_message="\`\`\`$1\`\`\`"
+    # format message as a code block ```${msg}```
+    slack_message="\`\`\`$1\`\`\`"
 
-  if [ ! -z ${SLACK_URL+x} ]; then
-    curl -X POST --data "payload={\"text\": \"${slack_message}\"}" ${SLACK_URL}
-  fi
+    if [ ! -z ${SLACK_URL+x} ]; then
+	curl -X POST --data "payload={\"text\": \"${slack_message}\"}" ${SLACK_URL}
+    fi
 }
 
 cleanup() {
-  echo '==> Cleaning up...'
-  if [[ $EUID -ne 0 ]]; then
-      sudo rm -rf \"${temp_install_dir}\""
+    echo '==> Cleaning up...'
+    if [[ $EUID -ne 0 ]]; then
+	sudo rm -rf \"${temp_install_dir}\""
   else
       rm -rf \"${temp_install_dir}\""
-  fi    
+    fi    
 }
 
 args() {
@@ -263,9 +281,9 @@ fi
 echo "==> Running chef-client in local mode"
 set -x
 if [[ -z "${environment_parm}" ]]; then
-sudo -E chef exec chef-client --local-mode --log_level error --config-option cookbook_path="${temp_install_dir}/berks-cookbooks" --override-runlist ${run_list}
+    sudo -E chef exec chef-client --local-mode --log_level error --config-option cookbook_path="${temp_install_dir}/berks-cookbooks" --override-runlist ${run_list}
 else
-sudo -E chef exec chef-client --local-mode --log_level error --config-option cookbook_path="${temp_install_dir}/berks-cookbooks" --override-runlist ${run_list} ${environment_parm}
+    sudo -E chef exec chef-client --local-mode --log_level error --config-option cookbook_path="${temp_install_dir}/berks-cookbooks" --override-runlist ${run_list} ${environment_parm}
 fi
 T="$(($(date +%s)-T))"
 notify "Chef run complete on $(hostname) exit_status=$?, elapsed time ${T} seconds"
