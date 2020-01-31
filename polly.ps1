@@ -156,7 +156,7 @@ source '$chef_supermarket'
             New-Item -ItemType 'directory' -path $tempInstallDir
         }
 
-        generate_berksfile $tempInstallDir https://supermarket.ocean.af $run_list
+        generate_berksfile $tempInstallDir https://artifacts.tet.wtf/api/chef/chef $run_list
         
         # Add ChefDK to the path
         $env:Path += ";C:\opscode\chef-workstation\bin"
