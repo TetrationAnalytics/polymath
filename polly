@@ -12,7 +12,7 @@ fi
 # ChefDK 3.x
 CHEF_WORKSTATION_TARGET_VERSION=0.2.41
 CHEFDK_TARGET_VERSION=3.12.10
-CHEF_SUPERMARKET=${CHEF_SUPERMARKET:-https://supermarket.ocean.af}
+CHEF_SUPERMARKET=${CHEF_SUPERMARKET:-https://artifacts.tet.wtf/api/chef/chef}
 
 usage() {
     echo "usage: $(basename $0) <cookbook::recipe> [path_to_optional_environment_file]"
