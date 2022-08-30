@@ -35,7 +35,7 @@ In order to make these commands work on a system behind a proxy server `PowerShe
 
 To set up the proxy config with `NetShell` on `PowerShell` v5.x and older run:
 ```
-netsh winhttp set proxy "https://proxy.esl.cisco.com:80" bypass-list= "10.*,172.*,192.168.*,*.cisco.com,*.tetrationanalytics.com,*.h4.ai,*.ocean.af,*.tet.wtf"
+netsh winhttp set proxy "http://proxy.esl.cisco.com:80" bypass-list= "10.*,172.*,192.168.*,*.cisco.com,*.tetrationanalytics.com,*.h4.ai,*.ocean.af,*.tet.wtf"
 ```
 
 It may also be necessary to enable certain protocols first, i.e. TLS1.2:
