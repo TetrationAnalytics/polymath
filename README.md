@@ -53,13 +53,6 @@ netsh winhttp show proxy
 netsh winhttp import proxy source=ie
 ```
 
-To configure the IE proxy options from the command line set them in the registry:
-```
-reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings" /v ProxyEnable /t REG_DWORD /D 1 /f
-reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings" /v ProxyServer /t REG_SZ /d proxy.esl.cisco.com:80 /f
-reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings" /v ProxyOverride /t REG_SZ /d "<local>,*.cisco.com,*.tetrationanalytics.com,*.tet.wtf,*.h4.ai,*.ocean.af" /f
-```
-
 #### PS 6.x/7.x
 
 In the newer `PowerShell Core` the following configures a proxy shell-wide:
@@ -73,6 +66,14 @@ These newer versions also allow the use of respective environment variables, jus
  - `ALL_PROXY` for both HTTP and HTTPS
  - `NO_PROXY` may contain a comma-separated list of hostnames excluded from proxying
 
+### Set proxy in IE Connection Settings
+
+To configure the IE proxy options from the command line set them in the registry:
+```
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings" /v ProxyEnable /t REG_DWORD /D 1 /f
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings" /v ProxyServer /t REG_SZ /d proxy.esl.cisco.com:80 /f
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings" /v ProxyOverride /t REG_SZ /d "<local>,*.cisco.com,*.tetrationanalytics.com,*.tet.wtf,*.h4.ai,*.ocean.af" /f
+```
 
 ### Chef installation/removal
 
