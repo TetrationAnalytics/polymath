@@ -35,7 +35,7 @@ In order to make these commands work on a system behind a proxy server `PowerShe
 
 To set up the proxy config with `NetShell` on `PowerShell` v5.x and older run:
 ```
-netsh winhttp set proxy "http://proxy.esl.cisco.com:80" bypass-list= "10.*,172.*,192.168.*,*.cisco.com,*.tetrationanalytics.com,*.h4.ai,*.ocean.af,*.tet.wtf"
+netsh winhttp set proxy "http://proxy.esl.cisco.com:80" bypass-list="<local>,*.cisco.com,*.tetrationanalytics.com,*.h4.ai,*.ocean.af,*.tet.wtf"
 ```
 
 It may also be necessary to enable certain protocols first, i.e. TLS1.2:
@@ -51,6 +51,13 @@ netsh winhttp show proxy
 `NetShell` does also allow to copy the proxy config from the system's internet settings, if configured already:
 ```
 netsh winhttp import proxy source=ie
+```
+
+To configure the IE proxy options from the command line set them in the registry:
+```
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings" /v ProxyEnable /t REG_DWORD /D 1 /f
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings" /v ProxyServer /t REG_SZ /d proxy.esl.cisco.com:80 /f
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings" /v ProxyOverride /t REG_SZ /d "<local>,*.cisco.com,*.tetrationanalytics.com,*.tet.wtf,*.h4.ai,*.ocean.af" /f
 ```
 
 #### PS 6.x/7.x
