@@ -42,6 +42,7 @@ It may also be necessary to enable certain protocols first, i.e. TLS1.2:
 ```
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 ```
+Ideally add this to the PowerShell profile file, the path is configured as `$PROFILE` by default.
 
 To verify that the proxy is configured, run:
 ```
